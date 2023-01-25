@@ -1,22 +1,21 @@
 import Head from "next/head";
-import SocketIOClient, { io } from "socket.io-client";
-import { useEffect, useState } from "react";
+import { useUsername } from "./_app";
+import { useRouter } from "next/router";
 
-let players: string[] = [];
 export default function Home() {
-	useEffect((): any => {
-		// connect to socket server
-		fetch('/api/socket');
-		var socket = io({transports: ['websocket'], upgrade: false});
+	const { username, setUsername } = useUsername();
+	const router = useRouter();
 
-		// log socket connection
-		socket.on("connect", () => {
-			console.log('CONNECTION ESTABLISHED FOR ' + socket.id)
-		});
+	function changeUsername(e) {
+		e.preventDefault();
+		const inputUsername: HTMLInputElement | null =
+			document.querySelector("#userNameBox");
 
-		// socket disconnet onUnmount if exists
-		if (socket) return () => socket.disconnect();
-	}, []);
+		if (inputUsername) {
+			setUsername(inputUsername.value);
+			router.push('/chat');
+		}
+	}
 
 	return (
 		<>
@@ -27,9 +26,16 @@ export default function Home() {
 				<link rel="icon" href="/favicon.ico" />
 			</Head>
 			<main id="map" className="w-screen h-screen">
-				{players.map((player, index) => (
-					<p key={index}>{player}</p>
-				))}
+				<form action="" onSubmit={changeUsername}>
+					<input
+						id="userNameBox"
+						type="text"
+						placeholder="change your username"
+					/>
+					<button type="submit">submit</button>
+
+					{username}
+				</form>
 			</main>
 		</>
 	);
