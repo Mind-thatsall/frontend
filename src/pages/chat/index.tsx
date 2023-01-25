@@ -2,13 +2,16 @@ import Head from "next/head";
 import SocketIOClient, { io } from "socket.io-client";
 import { useEffect, useState } from "react";
 import { useUsername } from "../_app";
+import { useRouter } from "next/router";
 
 export default function Chat() {
 	const [chat, setChat] = useState<Msg[]>([]);
 	const [msg, setMsg] = useState<string>("");
 	const { username } = useUsername();
+    const router = useRouter();
 
 	type Msg = {
+        id: number;
 		username: string;
 		message: string;
 	};
@@ -16,29 +19,38 @@ export default function Chat() {
 	useEffect((): any => {
 		// connect to socket server
 		fetch("/api/socket");
-		var socket = io();
+		var socket = io({upgrade:false});
+
+        if(username === '' || username === undefined) {
+            router.push('/')
+        }
 
 		// log socket connection
 		socket.on("connect", () => {
 			console.log("CONNECTION ESTABLISHED FOR " + socket.id);
-		});
+        });
+
+        socket.on('allMessages', (chats) => {
+            setChat(chats);
+        })
 
 		socket.on("newMsg", (msg: Msg) => {
-			chat.push(msg);
-			setChat([...chat]);
+			setChat(prevChat => [...prevChat, msg]);
+            socket.emit('newMessages', msg);
 		});
 
 		// socket disconnect onUnmount if exists
 		if (socket) return () => socket.disconnect();
 	}, []);
 
-	const addMsg = async (e) => {
+	const addMsg = async (e: { preventDefault: () => void; }) => {
 		e.preventDefault();
 		const inputMsg:HTMLInputElement|null = document.querySelector("#InputChat");
 
 		if (msg) {
 			// build message obj
 			const message: Msg = {
+                id: Math.floor(Math.random() * 2000),
 				username: username,
 				message: msg,
 			};

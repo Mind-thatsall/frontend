@@ -6,13 +6,13 @@ export default function Home() {
 	const { username, setUsername } = useUsername();
 	const router = useRouter();
 
-	function changeUsername(e) {
+	function changeUsername(e: { preventDefault: () => void; }) {
 		e.preventDefault();
 		const inputUsername: HTMLInputElement | null =
 			document.querySelector("#userNameBox");
 
 		if (inputUsername) {
-			setUsername(inputUsername.value);
+			setUsername(inputUsername.value.trim());
 			router.push('/chat');
 		}
 	}
