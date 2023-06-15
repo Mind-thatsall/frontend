@@ -12,6 +12,7 @@ export type NextApiResponseServerIO = NextApiResponse & {
 
 export type Msg = {
 	id: number;
+	colorAvatar: string;
 	username: string;
 	message: string;
 };
